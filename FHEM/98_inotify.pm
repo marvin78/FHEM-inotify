@@ -11,7 +11,7 @@ use File::Find;
 
 #######################
 # Global variables
-my $version = "0.3.5";
+my $version = "0.3.7";
 our $inotify;
 our @watch;
 
@@ -66,7 +66,6 @@ sub inotify_Define($$) {
 	}
   
   return undef;
-  
 }
 
 sub inotify_Undefine($$) {
@@ -91,21 +90,17 @@ sub inotify_Notify ($$) {
 	}
 
   return undef;
-
 }
 
 sub inotify_Read($) {
 	my ($hash) = @_;
   my $name = $hash->{NAME};
   
- 	 	
   $inotify->poll;
-  
 }
-
+ 
 sub inotify_Set ($@) {
   my ($hash, $name, $cmd, @args) = @_;
-	
 	my @sets = ();
 	
 	push @sets, "active:noArg" if (IsDisabled($name));
@@ -179,7 +174,7 @@ sub inotify_Attr($@) {
 	if ( $attrName eq "mask" ) {
 
 		if ( $cmd eq "set" ) {
-			return "$name: mask has to a list of masks divided by |" if ($attrVal!~ /\|/);
+			#return "$name: mask has to a list of masks divided by |" if ($attrVal!~ /\|/);
 			Log3 $name, 4, "inotify ($name): set attribut $attrName to $attrVal";
 			inotify_setMasks ($hash,$attrVal);
 		}
@@ -219,8 +214,7 @@ sub inotify_Watch($) {
 	$inotify = new Linux::Inotify2;
 	  
 	$inotify->blocking(0);
-	
-	
+		
 	if ($subF!=1) {
 		$watch[0] = $inotify->watch ($path, IN_ALL_EVENTS, sub {
 			my $e = shift;
@@ -242,7 +236,6 @@ sub inotify_Watch($) {
 		}
 	}
 
-	  
 	$hash->{FD} = $inotify->fileno;
 
 	$selectlist{$hash->{NAME}} = $hash;
@@ -256,6 +249,8 @@ sub inotify_AnalyseEvent($$) {
 	my $name = $hash->{NAME}; 
 	
 	my $mask;
+	
+	Log3 $name, 4, "inotify ($name): Fullname ".$e->fullname;
 	
 	if (($hash->{FILES} && $e->fullname=~/$hash->{FILES}/) || !$hash->{FILES}) {
 		Log3 $name, 5, "inotify ($name): got ".Dumper($e);
