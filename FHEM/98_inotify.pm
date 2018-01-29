@@ -11,7 +11,7 @@ use File::Find;
 
 #######################
 # Global variables
-my $version = "0.3.9";
+my $version = "0.3.10";
 our $inotify;
 our @watch;
 
@@ -162,7 +162,7 @@ sub inotify_Attr($@) {
 		elsif ( $cmd eq "del" || $attrVal == 0 ) {
 			if ($hash->{READINGS}{state}{VAL} ne "active") {
 				Log3 $name, 4, "inotify ($name): $name is now enabled";
-				inotify_Watch($hash);
+				InternalTimer(gettimeofday()+1, "inotify_Watch", $hash, 0);
 			}
 		}
 	}
@@ -173,20 +173,23 @@ sub inotify_Attr($@) {
 			#return "$name: mask has to a list of masks divided by |" if ($attrVal!~ /\|/);
 			Log3 $name, 4, "inotify ($name): set attribut $attrName to $attrVal";
 			inotify_setMasks ($hash,$attrVal);
+			InternalTimer(gettimeofday()+1, "inotify_Watch", $hash, 0) if (!IsDisabled($name));
 		}
 		elsif ( $cmd eq "del") {
 			delete ($hash->{helper}{"masks"});
+			InternalTimer(gettimeofday()+1, "inotify_Watch", $hash, 0) if (!IsDisabled($name));
 		}
 	}
 	
 	if ( $attrName eq "subfolders") {
 		if ( $cmd eq "set" ) {
 			return "$name: $attrName has to be 0 or 1" if ($attrVal !~ /^(0|1)$/);
-			inotify_Watch($hash);
 			Log3 $name, 4, "inotify ($name): set attribut $attrName to $attrVal";
+			InternalTimer(gettimeofday()+1, "inotify_Watch", $hash, 0) if (!IsDisabled($name));
 		}
 		elsif ( $cmd eq "del" ) {
 			Log3 $name, 4, "inotify ($name): deleted attribut $attrName";
+			InternalTimer(gettimeofday()+1, "inotify_Watch", $hash, 0) if (!IsDisabled($name));
 		}
 	}
 	
