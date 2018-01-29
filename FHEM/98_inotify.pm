@@ -360,7 +360,7 @@ sub inotify_inArray {
         <li>subfolders
         set to 1 if you want to watch all subfolders of the given path.<br /></li>
        	<li>mask
-        set your own mask for watching. 
+        set your own mask for watching. Pipe (|) seperated list.
         See the <a href='http://search.cpan.org/~mlehmann/Linux-Inotify2-1.22/Inotify2.pm'>
         	Linux::Inotify2</a> 
         Doku for possible masks.<br /><br /></li>
