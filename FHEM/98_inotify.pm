@@ -116,9 +116,7 @@ sub inotify_Set ($@) {
 	}
 	if ( $cmd =~ /^(active|inactive)?$/ ) {   
 		readingsSingleUpdate($hash,"state",$cmd,1);
-		foreach my $w (@watch) {
-			$w->cancel;
-		}
+		inotify_CancelWatches($hash);
 		CommandDeleteAttr(undef,"$name disable") if ($cmd eq "active" && AttrVal($name,"disable",0)==1);
 		InternalTimer(gettimeofday()+1, "inotify_Watch", $hash, 0) if (!IsDisabled($name) && $cmd eq "active");
 		Log3 $name, 3, "inotify ($name): set Device $cmd";
@@ -157,9 +155,7 @@ sub inotify_Attr($@) {
 		if ( $cmd eq "set" && $attrVal == 1 ) {
 			if ($hash->{READINGS}{state}{VAL} ne "disabled") {
 				readingsSingleUpdate($hash,"state","disabled",1);
-				foreach my $w (@watch) {
-					$w->cancel;
-				}
+				inotify_CancelWatches($hash);
 				Log3 $name, 4, "inotify ($name): $name is now disabled";
 			}
 		}
@@ -186,9 +182,6 @@ sub inotify_Attr($@) {
 	if ( $attrName eq "subfolders") {
 		if ( $cmd eq "set" ) {
 			return "$name: $attrName has to be 0 or 1" if ($attrVal !~ /^(0|1)$/);
-			foreach my $w (@watch) {
-				$w->cancel;
-			}
 			inotify_Watch($hash);
 			Log3 $name, 4, "inotify ($name): set attribut $attrName to $attrVal";
 		}
@@ -208,6 +201,8 @@ sub inotify_Watch($) {
 	my $name = $hash->{NAME}; 
 	
 	my $subF = AttrVal($name,"subfolders",0);
+	
+	inotify_CancelWatches($hash);
 	
 	inotify_setMasks ($hash,AttrVal($name,"mask",undef));
 
@@ -240,6 +235,14 @@ sub inotify_Watch($) {
 
 	$selectlist{$hash->{NAME}} = $hash;
 	
+	return;
+}
+
+sub inotify_CancelWatches($) {
+	my ($hash) = @_;
+	foreach my $w (@watch) {
+		$w->cancel;
+	}
 	return;
 }
 
