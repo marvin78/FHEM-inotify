@@ -11,7 +11,7 @@ use File::Find;
 
 #######################
 # Global variables
-my $version = "0.3.8";
+my $version = "0.3.9";
 our $inotify;
 our @watch;
 
@@ -209,8 +209,11 @@ sub inotify_Watch($) {
 	$inotify = new Linux::Inotify2;
 	  
 	$inotify->blocking(0);
+	
+	delete ($hash->{helper}{dirs});
 		
 	if ($subF!=1) {
+		push @{$hash->{helper}{dirs}},$path;
 		$watch[0] = $inotify->watch ($path, IN_ALL_EVENTS, sub {
 			my $e = shift;
 			Log3 $name, 4, "inotify ($name): path to watch ".$path;
