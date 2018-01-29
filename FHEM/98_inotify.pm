@@ -322,12 +322,12 @@ sub inotify_inArray {
 <a name="inotify"></a>
 <h3>inotify</h3>
 <ul>
-    This module collects file events in a given path. It uses inotify. It can only be used in a Linux OS 
-    inotify installed
+    This module collects file events in a given path. Inotify (inode notify) is a Linux kernel subsystem that 
+    acts to extend filesystems to notice changes to the filesystem, and report those changes to applications
     <br /><br />
     Notes:<br />
     <ul>
-        <li>Perl modules Data::Dumper, Linux::Inotify2, File::Find and inotify-tools have to be 
+        <li>Perl modules Data::Dumper, Linux::Inotify2, File::Find have to be 
         installed on the FHEM host.</li>
     </ul>
     <br />
