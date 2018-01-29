@@ -11,7 +11,7 @@ use File::Find;
 
 #######################
 # Global variables
-my $version = "0.3.7";
+my $version = "0.3.8";
 our $inotify;
 our @watch;
 
@@ -253,7 +253,7 @@ sub inotify_AnalyseEvent($$) {
 	
 	my $mask;
 	
-	Log3 $name, 4, "inotify ($name): Fullname ".$e->fullname;
+	Log3 $name, 5, "inotify ($name): Fullname ".$e->fullname;
 	
 	if (($hash->{FILES} && $e->fullname=~/$hash->{FILES}/) || !$hash->{FILES}) {
 		Log3 $name, 5, "inotify ($name): got ".Dumper($e);
