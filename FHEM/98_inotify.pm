@@ -11,7 +11,7 @@ use File::Find;
 
 #######################
 # Global variables
-my $version = "0.4.1";
+my $version = "0.4.2";
 our $inotify;
 our @watch;
 
@@ -134,18 +134,48 @@ sub inotify_Set ($@) {
 		Log3 $name, 3, "inotify ($name): Device is disabled at set Device $cmd";
 		return "Device is disabled. Enable it on order to use command ".$cmd;
 	}
-	if ( $cmd =~ /^(active|inactive)?$/ ) {   
-		readingsSingleUpdate($hash,"state",$cmd,1);
-		inotify_CancelWatches($hash);
-		CommandDeleteAttr(undef,"$name disable") if ($cmd eq "active" && AttrVal($name,"disable",0)==1);
-		InternalTimer(gettimeofday()+1, "inotify_Watch", $hash, 0) if (!IsDisabled($name) && $cmd eq "active");
-		Log3 $name, 3, "inotify ($name): set Device $cmd";
+	if ( $cmd eq "inactive" ) {
+		inotify_Inactive($hash);
+	}
+	elsif ( $cmd eq "active") {
+		inotify_Active($hash);
 	}
 	else {
 		return $usage;
 	}
 
 	return undef;
+}
+
+sub inotify_Active($;$) {
+	my ($hash,$ndel) = @_;
+	
+	my $name = $hash->{NAME};
+	
+	$ndel = 0 if (!defined($ndel));
+	
+	inotify_CancelWatches($hash);
+	CommandDeleteAttr(undef,"$name disable") if (AttrVal($name,"disable",0)==1 && $ndel==0);
+	InternalTimer(gettimeofday()+1, "inotify_Watch", $hash, 0);
+	
+	readingsSingleUpdate($hash,"state","active",1);
+	
+	Log3 $name, 3, "inotify ($name): set Device active";
+	
+	return;
+}
+
+sub inotify_Inactive($) {
+	my ($hash) = @_;
+	
+	my $name = $hash->{NAME};
+	
+	readingsSingleUpdate($hash,"state","inactive",1);
+	inotify_CancelWatches($hash);
+	
+	Log3 $name, 3, "inotify ($name): set Device inactive";
+	
+	return;
 }
 
 sub inotify_Get($@) {
@@ -173,16 +203,13 @@ sub inotify_Attr($@) {
 	if ( $attrName eq "disable" ) {
 
 		if ( $cmd eq "set" && $attrVal == 1 ) {
-			if ($hash->{READINGS}{state}{VAL} ne "disabled") {
-				readingsSingleUpdate($hash,"state","disabled",1);
-				inotify_CancelWatches($hash);
-				Log3 $name, 4, "inotify ($name): $name is now disabled";
+			if ($hash->{READINGS}{state}{VAL} ne "inactive") {
+				inotify_Inactive($hash);
 			}
 		}
 		elsif ( $cmd eq "del" || $attrVal == 0 ) {
 			if ($hash->{READINGS}{state}{VAL} ne "active") {
-				Log3 $name, 4, "inotify ($name): $name is now enabled";
-				InternalTimer(gettimeofday()+1, "inotify_Watch", $hash, 0);
+				inotify_Active($hash,1);
 			}
 		}
 	}
