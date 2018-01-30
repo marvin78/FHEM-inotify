@@ -11,7 +11,7 @@ use File::Find;
 
 #######################
 # Global variables
-my $version = "0.3.10";
+my $version = "0.4.0";
 our $inotify;
 our @watch;
 
