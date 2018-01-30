@@ -19,6 +19,19 @@ my %gets = (
   "version:noArg"     => "",
 ); 
 
+my $maskAttrs	=	"IN_ACCESS,".
+								"IN_MODIFY,".
+								"IN_ATTRIB,".
+								"IN_CLOSE_WRITE,".
+								"IN_CLOSE_NOWRITE,".
+								"IN_OPEN,".
+								"IN_MOVED_FROM,".
+								"IN_MOVED_TO,".
+								"IN_CREATE,".
+								"IN_DELETE,".
+								"IN_DELETE_SELF,".
+								"IN_MOVE_SELF";
+
 
 sub inotify_Initialize($) {
     my ($hash) = @_;
@@ -33,7 +46,7 @@ sub inotify_Initialize($) {
     $hash->{AttrList} = "disable:1,0 ".
 												"do_not_notify ".
 												"subfolders:1,0 ".
-												"mask ".
+												"mask:multiple-strict,".$maskAttrs." ".
 												$readingFnAttributes;
 	
 	return undef;
@@ -87,6 +100,7 @@ sub inotify_Notify ($$) {
 	
 	if (!IsDisabled($name)) {
 	  inotify_Watch($hash);
+	  $attr{$name}{"mask"}=~s/\|/,/g;
 	}
 
   return undef;
@@ -171,7 +185,7 @@ sub inotify_Attr($@) {
 
 		if ( $cmd eq "set" ) {
 			#return "$name: mask has to a list of masks divided by |" if ($attrVal!~ /\|/);
-			Log3 $name, 4, "inotify ($name): set attribut $attrName to $attrVal";
+			Log3 $name, 4, "inotify ($name): set attribut $attrName to $attrVal";		
 			inotify_setMasks ($hash,$attrVal);
 			InternalTimer(gettimeofday()+1, "inotify_Watch", $hash, 0) if (!IsDisabled($name));
 		}
@@ -295,8 +309,9 @@ sub inotify_setMasks ($$) {
 	my ($hash,$attrVal) = @_;
 	my $name = $hash->{NAME}; 
 	
+	$attr{$name}{"mask"}=~s/\|/,/g;
 	if ($attrVal) {
-		my @masks = split(/\|/,$attrVal);
+		my @masks = split(/\,/,$attrVal);
 		@{$hash->{helper}{"masks"}} = @masks;
 	}
 	
@@ -322,7 +337,7 @@ sub inotify_inArray {
 <a name="inotify"></a>
 <h3>inotify</h3>
 <ul>
-    This module collects file events in a given path. Inotify (inode notify) is a Linux kernel subsystem that 
+    This module collects file events in a given path. Inotify (inode notify) is a Linux kernel subsystem that<br /> 
     acts to extend filesystems to notice changes to the filesystem, and report those changes to applications
     <br /><br />
     Notes:<br />
@@ -361,10 +376,10 @@ sub inotify_inArray {
         <li><a href="#readingFnAttributes">readingFnAttributes</a></li>
         <li><a href="#do_not_notify">do_not_notify</a></li>
         <li><a name="#disable">disable</a></li>
-        <li>subfolders
+        <li><b>subfolders</b><br />
         set to 1 if you want to watch all subfolders of the given path.<br /></li>
-       	<li>mask
-        set your own mask for watching. Pipe (|) seperated list.
+       	<li><b>mask</b><br />
+        set your own mask for watching. Komma seperated list.
         See the <a href='http://search.cpan.org/~mlehmann/Linux-Inotify2-1.22/Inotify2.pm'>
         	Linux::Inotify2</a> 
         Doku for possible masks.<br /><br /></li>
@@ -372,11 +387,11 @@ sub inotify_inArray {
     <a name="inotify_Readings"></a>
     <h4>Readings</h4>
     <ul>
-    	<li>lastEventFile<br />
+    	<li><b>lastEventFile</b><br />
     			the last modified file</li>
-    	<li>lastEventMask<br />
+    	<li><b>lastEventMask</b><br />
     			the last mask we got in the event</li>
-    	<li>state<br />
+    	<li><b>state</b><br />
     			device is active or inactive</li>
     </ul>
 </ul>
