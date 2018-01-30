@@ -11,9 +11,10 @@ use File::Find;
 
 #######################
 # Global variables
-my $version = "0.4.4";
+my $version = "0.4.6";
 our $inotify;
 our @watch;
+
 
 my %gets = (
   "version:noArg"     => "",
@@ -322,6 +323,8 @@ sub inotify_CancelWatches($;$) {
 		$watchString .= " with the file pattern ".$hash->{FILES};
 	}
 	
+	delete($hash->{helper}{events});
+	
 	Log3 $name, 3, "inotify ($name): stopped watching ".$watchString if (!$noLog);
 	return;
 }
@@ -353,6 +356,18 @@ sub inotify_AnalyseEvent($$) {
 		$mask="IN_Q_OVERFLOW" if ($e->IN_Q_OVERFLOW);
 		
 		if (!$hash->{helper}{"masks"} || inotify_inArray(\@{$hash->{helper}{"masks"}},$mask)) {	
+			
+			my $r=0;
+			for (my $i=9;$i>=1;$i--) {
+				$r=$i-1;
+				$hash->{helper}{events}{$i}{"mask"}=$hash->{helper}{events}{$r}{"mask"} if ($hash->{helper}{events}{$r}{"mask"});
+				$hash->{helper}{events}{$i}{"file"}=$hash->{helper}{events}{$r}{"file"} if ($hash->{helper}{events}{$r}{"file"});
+				$hash->{helper}{events}{$i}{"time"}=$hash->{helper}{events}{$r}{"time"} if ($hash->{helper}{events}{$r}{"time"});
+			}
+			$hash->{helper}{events}{0}{"mask"}=$mask;
+			$hash->{helper}{events}{0}{"file"}=$e->fullname;
+			$hash->{helper}{events}{0}{"time"}=TimeNow();
+			
 			readingsBeginUpdate($hash);
 			readingsBulkUpdate($hash,"lastEventFile",$e->fullname);
 			readingsBulkUpdate($hash,"lastEventMask",$mask);
