@@ -11,7 +11,7 @@ use File::Find;
 
 #######################
 # Global variables
-my $version = "0.4.2";
+my $version = "0.4.3";
 our $inotify;
 our @watch;
 
@@ -226,7 +226,6 @@ sub inotify_Active($;$) {
 	
 	$ndel = 0 if (!defined($ndel));
 	
-	inotify_CancelWatches($hash);
 	CommandDeleteAttr(undef,"$name disable") if (AttrVal($name,"disable",0)==1 && $ndel==0);
 	InternalTimer(gettimeofday()+1, "inotify_Watch", $hash, 0);
 	
@@ -260,7 +259,7 @@ sub inotify_Watch($) {
 	
 	my $subF = AttrVal($name,"subfolders",0);
 	
-	inotify_CancelWatches($hash);
+	inotify_CancelWatches($hash,1);
 	
 	inotify_setMasks ($hash,AttrVal($name,"mask",undef));
 
@@ -296,14 +295,34 @@ sub inotify_Watch($) {
 
 	$selectlist{$hash->{NAME}} = $hash;
 	
+	my $watchString = $path;
+	if ($hash->{FILES} && $hash->{FILES} ne "") {
+		$watchString .= "with the file pattern ".$hash->{FILES};
+	}
+	
+	Log3 $name, 3, "inotify ($name): startet watching ".$watchString;
+	
 	return;
 }
 
-sub inotify_CancelWatches($) {
-	my ($hash) = @_;
+sub inotify_CancelWatches($;$) {
+	my ($hash,$noLog) = @_;
+	
+	$noLog = 0 if (!defined($noLog));
+	
+	my $path = $hash->{PATH};
+	
+	my $name = $hash->{NAME}; 
+	
 	foreach my $w (@watch) {
 		$w->cancel;
 	}
+	my $watchString = $path;
+	if ($hash->{FILES} && $hash->{FILES} ne "") {
+		$watchString .= "with the file pattern ".$hash->{FILES};
+	}
+	
+	Log3 $name, 3, "inotify ($name): stopped watching ".$watchString if (!$noLog);
 	return;
 }
 
@@ -312,7 +331,7 @@ sub inotify_AnalyseEvent($$) {
 	
 	my $name = $hash->{NAME}; 
 	
-	my $mask;
+	my $mask = "NA";
 	
 	Log3 $name, 5, "inotify ($name): Fullname ".$e->fullname;
 	
@@ -340,7 +359,10 @@ sub inotify_AnalyseEvent($$) {
 			readingsEndUpdate( $hash, 1 );
 		
 			Log3 $name, 4, "inotify ($name): got event ".$mask." for ".$e->fullname;
-			Log3 $name, 3, "inotify ($name): got error ".$mask." for ".$e->fullname if ($mask eq "IN_Q_OVERFLOW");
+			Log3 $name, 1, "inotify ($name): got error ".$mask." for ".$e->fullname if ($mask eq "IN_Q_OVERFLOW");
+		}
+		else {
+			Log3 $name, 4, "inotify ($name): event is not matching any configured mask: ".$mask;
 		}
 	}
 	return;
