@@ -30,7 +30,11 @@ my $maskAttrs	=	"IN_ACCESS,".
 								"IN_CREATE,".
 								"IN_DELETE,".
 								"IN_DELETE_SELF,".
-								"IN_MOVE_SELF";
+								"IN_MOVE_SELF,".
+								"IN_ALL_EVENTS,".
+								"IN_ONLYDIR,".
+								"IN_CLOSE,".
+								"IN_MOVE";
 
 
 sub inotify_Initialize($) {
