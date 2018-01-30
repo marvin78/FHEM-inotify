@@ -297,7 +297,7 @@ sub inotify_Watch($) {
 	
 	my $watchString = $path;
 	if ($hash->{FILES} && $hash->{FILES} ne "") {
-		$watchString .= "with the file pattern ".$hash->{FILES};
+		$watchString .= " with the file pattern ".$hash->{FILES};
 	}
 	
 	Log3 $name, 3, "inotify ($name): startet watching ".$watchString;
@@ -319,7 +319,7 @@ sub inotify_CancelWatches($;$) {
 	}
 	my $watchString = $path;
 	if ($hash->{FILES} && $hash->{FILES} ne "") {
-		$watchString .= "with the file pattern ".$hash->{FILES};
+		$watchString .= " with the file pattern ".$hash->{FILES};
 	}
 	
 	Log3 $name, 3, "inotify ($name): stopped watching ".$watchString if (!$noLog);
