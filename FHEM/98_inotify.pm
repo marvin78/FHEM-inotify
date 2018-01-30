@@ -147,37 +147,6 @@ sub inotify_Set ($@) {
 	return undef;
 }
 
-sub inotify_Active($;$) {
-	my ($hash,$ndel) = @_;
-	
-	my $name = $hash->{NAME};
-	
-	$ndel = 0 if (!defined($ndel));
-	
-	inotify_CancelWatches($hash);
-	CommandDeleteAttr(undef,"$name disable") if (AttrVal($name,"disable",0)==1 && $ndel==0);
-	InternalTimer(gettimeofday()+1, "inotify_Watch", $hash, 0);
-	
-	readingsSingleUpdate($hash,"state","active",1);
-	
-	Log3 $name, 3, "inotify ($name): set Device active";
-	
-	return;
-}
-
-sub inotify_Inactive($) {
-	my ($hash) = @_;
-	
-	my $name = $hash->{NAME};
-	
-	readingsSingleUpdate($hash,"state","inactive",1);
-	inotify_CancelWatches($hash);
-	
-	Log3 $name, 3, "inotify ($name): set Device inactive";
-	
-	return;
-}
-
 sub inotify_Get($@) {
   my ($hash, $name, $cmd, @args) = @_;
   my $ret = undef;
@@ -249,6 +218,38 @@ sub inotify_Attr($@) {
 	
 	return;
 }
+
+sub inotify_Active($;$) {
+	my ($hash,$ndel) = @_;
+	
+	my $name = $hash->{NAME};
+	
+	$ndel = 0 if (!defined($ndel));
+	
+	inotify_CancelWatches($hash);
+	CommandDeleteAttr(undef,"$name disable") if (AttrVal($name,"disable",0)==1 && $ndel==0);
+	InternalTimer(gettimeofday()+1, "inotify_Watch", $hash, 0);
+	
+	readingsSingleUpdate($hash,"state","active",1);
+	
+	Log3 $name, 3, "inotify ($name): set Device active";
+	
+	return;
+}
+
+sub inotify_Inactive($) {
+	my ($hash) = @_;
+	
+	my $name = $hash->{NAME};
+	
+	readingsSingleUpdate($hash,"state","inactive",1);
+	inotify_CancelWatches($hash);
+	
+	Log3 $name, 3, "inotify ($name): set Device inactive";
+	
+	return;
+}
+
 
 sub inotify_Watch($) {
 	my ($hash, $arg) = @_;
