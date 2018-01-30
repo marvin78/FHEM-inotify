@@ -11,7 +11,7 @@ use File::Find;
 
 #######################
 # Global variables
-my $version = "0.4.0";
+my $version = "0.4.1";
 our $inotify;
 our @watch;
 
@@ -19,22 +19,24 @@ my %gets = (
   "version:noArg"     => "",
 ); 
 
-my $maskAttrs	=	"IN_ACCESS,".
-								"IN_MODIFY,".
-								"IN_ATTRIB,".
-								"IN_CLOSE_WRITE,".
-								"IN_CLOSE_NOWRITE,".
-								"IN_OPEN,".
-								"IN_MOVED_FROM,".
-								"IN_MOVED_TO,".
-								"IN_CREATE,".
-								"IN_DELETE,".
-								"IN_DELETE_SELF,".
-								"IN_MOVE_SELF,".
-								"IN_ALL_EVENTS,".
-								"IN_ONLYDIR,".
-								"IN_CLOSE,".
-								"IN_MOVE";
+my @maskAttrs	=	(
+								"IN_ACCESS",
+								"IN_MODIFY",
+								"IN_ATTRIB",
+								"IN_CLOSE_WRITE",
+								"IN_CLOSE_NOWRITE",
+								"IN_OPEN",
+								"IN_MOVED_FROM",
+								"IN_MOVED_TO",
+								"IN_CREATE",
+								"IN_DELETE",
+								"IN_DELETE_SELF",
+								"IN_MOVE_SELF",
+								"IN_ALL_EVENTS",
+								"IN_ONLYDIR",
+								"IN_CLOSE",
+								"IN_MOVE"
+								);
 
 
 sub inotify_Initialize($) {
@@ -50,7 +52,7 @@ sub inotify_Initialize($) {
     $hash->{AttrList} = "disable:1,0 ".
 												"do_not_notify ".
 												"subfolders:1,0 ".
-												"mask:multiple-strict,".$maskAttrs." ".
+												"mask:multiple-strict,".join(',',@maskAttrs)." ".
 												$readingFnAttributes;
 	
 	return undef;
@@ -188,7 +190,14 @@ sub inotify_Attr($@) {
 	if ( $attrName eq "mask" ) {
 
 		if ( $cmd eq "set" ) {
-			#return "$name: mask has to a list of masks divided by |" if ($attrVal!~ /\|/);
+			my @maskSet = split(',',$attrVal);
+			my $check = 1;
+			foreach (@maskSet) {
+				if (!inotify_inArray(\@maskAttrs,$_)) {
+					$check=0;
+				}
+			}
+			return "$name: mask has to be a list of possible masks divided by comma. Select out of ".join(', ',@maskAttrs) if (!$check);
 			Log3 $name, 4, "inotify ($name): set attribut $attrName to $attrVal";		
 			inotify_setMasks ($hash,$attrVal);
 			InternalTimer(gettimeofday()+1, "inotify_Watch", $hash, 0) if (!IsDisabled($name));
