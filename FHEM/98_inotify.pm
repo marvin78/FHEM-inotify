@@ -40,20 +40,20 @@ my @maskAttrs	=	(
 
 
 sub inotify_Initialize($) {
-    my ($hash) = @_;
-    $hash->{SetFn}    = "inotify_Set";
-    $hash->{GetFn}    = "inotify_Get";
-		$hash->{DefFn}    = "inotify_Define";
-		$hash->{UndefFn}  = "inotify_Undefine";
-		$hash->{AttrFn}   = "inotify_Attr";
-		$hash->{NotifyFn} = "inotify_Notify";
-		$hash->{ReadFn}		= "inotify_Read";
-	
-    $hash->{AttrList} = "disable:1,0 ".
-												"do_not_notify ".
-												"subfolders:1,0 ".
-												"mask:multiple-strict,".join(',',@maskAttrs)." ".
-												$readingFnAttributes;
+	my ($hash) = @_;
+	$hash->{SetFn}    = "inotify_Set";
+	$hash->{GetFn}    = "inotify_Get";
+	$hash->{DefFn}    = "inotify_Define";
+	$hash->{UndefFn}  = "inotify_Undefine";
+	$hash->{AttrFn}   = "inotify_Attr";
+	$hash->{NotifyFn} = "inotify_Notify";
+	$hash->{ReadFn}		= "inotify_Read";
+
+	$hash->{AttrList} = "disable:1,0 ".
+											"do_not_notify ".
+											"subfolders:1,0 ".
+											"mask:multiple-strict,".join(',',@maskAttrs)." ".
+											$readingFnAttributes;
 	
 	return undef;
 }
