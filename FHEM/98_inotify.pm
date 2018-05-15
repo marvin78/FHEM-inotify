@@ -72,6 +72,11 @@ sub inotify_Define($$) {
     Log3 $name, 4, $msg;
     return $msg;
   }
+  elsif ($a[3] && $a[3]=~/^\*.*/) {
+    my $msg = "Wrong syntax: define <name> inotify <path> [<regexp>]. Please provide a valid regexp in <regexp>.";
+    Log3 $name, 4, $msg;
+    return $msg;
+  }
   
   $hash->{PATH}=$a[2];
   $hash->{FILES}=$a[3]?$a[3]:undef;
@@ -338,7 +343,7 @@ sub inotify_AnalyseEvent($$) {
 	
 	Log3 $name, 5, "inotify ($name): Fullname ".$e->fullname;
 	
-	if (($hash->{FILES} && $e->fullname=~/$hash->{FILES}/) || !$hash->{FILES}) {
+	if (($hash->{FILES} && $hash->{FILES}!~/^\*.*/ && $e->fullname=~/$hash->{FILES}/) || !$hash->{FILES}) {
 		Log3 $name, 5, "inotify ($name): got ".Dumper($e);
 		
 		$mask="IN_ACCESS" if ($e->IN_ACCESS);
