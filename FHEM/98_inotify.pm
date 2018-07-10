@@ -11,7 +11,7 @@ use File::Find;
 
 #######################
 # Global variables
-my $version = "0.4.7";
+my $version = "0.4.8";
 our $inotify;
 our @watch;
 
@@ -86,7 +86,8 @@ sub inotify_Define($$) {
   $hash->{NOTIFYDEV}= "global";
   
   ## start polling
-	if ($init_done && !IsDisabled($name)) { 
+	if ($init_done && !IsDisabled($name)) {
+	  readingsSingleUpdate($hash,"state","active",1);
 	  inotify_Watch($hash);
 	}
   
@@ -384,6 +385,8 @@ sub inotify_AnalyseEvent($$) {
 		else {
 			Log3 $name, 4, "inotify ($name): event is not matching any configured mask: ".$mask;
 		}
+		my $subF = AttrVal($name,"subfolders",0);
+		inotify_Watch($hash) if ($subF==1 && ((-d $e->fullname && $mask eq "IN_CREATE") || $mask eq "IN_DELETE"));
 	}
 	return;
 }
