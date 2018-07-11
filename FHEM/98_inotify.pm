@@ -11,7 +11,7 @@ use File::Find;
 
 #######################
 # Global variables
-my $version = "0.4.8";
+my $version = "0.4.9";
 our $inotify;
 our @watch;
 
@@ -361,7 +361,7 @@ sub inotify_AnalyseEvent($$) {
 		$mask="IN_MOVE_SELF" if ($e->IN_MOVE_SELF);
 		$mask="IN_Q_OVERFLOW" if ($e->IN_Q_OVERFLOW);
 		
-		if (!$hash->{helper}{"masks"} || inotify_inArray(\@{$hash->{helper}{"masks"}},$mask)) {	
+		if (!$hash->{helper}{"masks"} || inotify_inArray(\@{$hash->{helper}{"masks"}},$mask) || inotify_inArray(\@{$hash->{helper}{"masks"}},"IN_ALL_EVENTS")) {	
 			
 			my $r=0;
 			for (my $i=9;$i>=1;$i--) {
