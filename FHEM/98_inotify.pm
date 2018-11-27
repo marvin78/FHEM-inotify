@@ -55,6 +55,12 @@ sub inotify_Initialize($) {
 											"subfolders:1,0 ".
 											"mask:multiple-strict,".join(',',@maskAttrs)." ".
 											$readingFnAttributes;
+											
+  ## renew version in reload
+  foreach my $d ( sort keys %{ $modules{inotify}{defptr} } ) {
+      my $hash = $modules{inotify}{defptr}{$d};
+      $hash->{VERSION} = $version;
+  }
 	
 	return undef;
 }
