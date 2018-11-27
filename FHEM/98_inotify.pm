@@ -11,7 +11,7 @@ use File::Find;
 
 #######################
 # Global variables
-my $version = "0.4.9";
+my $version = "0.5.2";
 our $inotify;
 our @watch;
 
@@ -56,6 +56,8 @@ sub inotify_Initialize($) {
 											"mask:multiple-strict,".join(',',@maskAttrs)." ".
 											$readingFnAttributes;
 											
+	$hash->{NotifyOrderPrefix} = "81-";
+											
   ## renew version in reload
   foreach my $d ( sort keys %{ $modules{inotify}{defptr} } ) {
       my $hash = $modules{inotify}{defptr}{$d};
@@ -87,7 +89,8 @@ sub inotify_Define($$) {
   $hash->{PATH}=$a[2];
   $hash->{FILES}=$a[3]?$a[3]:undef;
   
-  $hash->{VERSION}=$version;
+  $hash->{VERSION} = $version;
+  $hash->{MID}     = 'da39a3ee5e6dfdss434436657657bdbfef95601890afd80709'; # 
   
   $hash->{NOTIFYDEV}= "global";
   
