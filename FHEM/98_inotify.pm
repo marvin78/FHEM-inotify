@@ -1,4 +1,4 @@
-# $Id: 98_inotify.pm  $
+# $Id$
 
 package main;
 
@@ -11,7 +11,7 @@ use File::Find;
 
 #######################
 # Global variables
-my $version = "0.5.2";
+my $version = "0.5.4";
 our $inotify;
 our @watch;
 
@@ -94,11 +94,15 @@ sub inotify_Define($$) {
   
   $hash->{NOTIFYDEV}= "global";
   
+  $modules{inotify}{defptr}{ $hash->{MID} } = $hash; #MID for internal purposes
+  
   ## start polling
 	if ($init_done && !IsDisabled($name)) {
 	  readingsSingleUpdate($hash,"state","active",1);
 	  inotify_Watch($hash);
 	}
+	
+	CommandAttr( undef, $name . ' mask IN_CREATE' ) if ( AttrVal( $name, 'mask', '-' ) eq '-' );
   
   return undef;
 }
