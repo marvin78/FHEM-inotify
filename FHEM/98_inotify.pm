@@ -11,10 +11,10 @@ my $missingModule = "";
 eval { use Linux::Inotify2; };
 
 unless($@) {
-  Log 4, "inotify - found Linux::inotify2";
+  Log 4, "inotify - found Linux::Inotify2";
 }
 else {
-  Log 1, "inotify - unable to load Linux::inotify2 module: $@. Please install with sudo apt-get install liblinux-inotify2-perl"; 
+  Log 1, "inotify - unable to load Linux::Inotify2 module: $@. Please install with sudo apt-get install liblinux-inotify2-perl"; 
   $missingModule = "Linux::Inotify2 ";
 }
 
