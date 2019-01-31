@@ -5,11 +5,11 @@ package main;
 use strict;
 use warnings;
 use Linux::Inotify2;
+use Data::Dumper;
 
 my $missingModule = "";
 
-eval "use Data::Dumper;1" or $missingModule .= "Data::Dumper ";
-#eval "use Linux::Inotify2;1" or $missingModule .= "Linux::Inotify2 ";
+
 eval "use File::Find;1" or $missingModule .= "File::Find ";
 
 
